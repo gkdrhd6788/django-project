@@ -6,13 +6,34 @@
 <h4>영화 제목: {{movie.title}}</h4>
 <h4>영화 내용: {{movie.description}}</h4>
 <hr>
-<form action="{% url "movies:delete" movie.pk%}" method="POST">
-    {% csrf_token %}
-    <input type="submit" value="영화 삭제">
-</form>
+{% if request.user == movie.user  %}
+    <form action="{% url "movies:delete" movie.pk%}" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="영화 삭제">
+    </form>
+    <a href="{% url "movies:update" movie.pk %}">영화 수정</a>
+{% endif %}
 <hr>    
-{{comment_form}}
+{% for comment in comments %}
+    <p>{{comment.content}}</p>
+    {% if request.user == comment.user %}
+        <form action="{% url "movies:comments_delete" movie.pk comment.pk  %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="댓글 삭제하기">
+        </form>
+    {% endif %}
+{% empty %}
+    <p>댓글이 없어요</p>
+{% endfor %}
 
+<hr>
+<form action="{% url "movies:comments_create" movie.pk %}" method ="POST">
+    {% csrf_token %}
+    {{comment_form}}
+    <input type="submit" value="댓글 생성하기">
+</form>
+
+<a href="{% url "movies:index" %}">BACK</a>
 
 
 {% endblock content %}
