@@ -1,7 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 {{request.user}}
-
+<h1>INDEX PAGE</h1>
+<div class="container" >
+    <div class = "row g-5">
+    {% for movie in movies %}
+        <div class="col-6 ">
+            <div class = 'card'>
+                <div class="card-body">
+                    <a href="#"><h5 class="card-title">{{movie.title}}</h5></a>
+                    {% comment %} <p class="card-text">{{movie.description}}</p> {% endcomment %}
+                    <p>{{movie.created_at}}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+</div>
 {% endblock content %}
