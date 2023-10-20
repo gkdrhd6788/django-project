@@ -12,6 +12,11 @@
     <input type="submit" value="회원탈퇴">
   </form>
 
+  <form action="{% url "accounts:change_password" user.pk %}" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="비밀번호 변경 링크">
+  </form>
+
 {% endblock content %}
 
 
