@@ -8,6 +8,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 # Create your views here.
 
+
+@require_http_methods(['POST','GET'])
 def login(request):
     if request.user.is_authenticated:
         return redirect('movies:index')
@@ -26,6 +28,7 @@ def login(request):
     }
     return render(request, 'accounts/login.html', context)
 
+
 @login_required
 @require_http_methods(['POST',])
 def logout(request):
@@ -33,6 +36,7 @@ def logout(request):
         return redirect('movies:index')
 
 
+@require_http_methods(['POST','GET'])
 def signup(request):
     if request.user.is_authenticated:
         return redirect('movies:index')
@@ -53,12 +57,27 @@ def signup(request):
     return render(request, 'accounts/signup.html', context)
 
 
+@require_http_methods(['GET','POST',])
 def update(request):
-    pass
+    if request.method=='POST':
+        form = CustomUserCreationForm(request.POST,instance = request.user)
+        if form.is_valid():
+            user=form.save()
+            auth_login(request,user)
+            return redirect('movies:index')
+    else:
+        form = CustomUserCreationForm(instance=request.user)
+    context = {
+        'form':form,
+    }
+    return render(request,'accounts/update.html',context)
 
 
+@require_http_methods(['POST',])
 def delete(request):
-    pass
+    request.user.delete()
+    # auth_logout(request.user)
+    return redirect("movies:index")
 
 
 def change_password(request):
