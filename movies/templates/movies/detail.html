@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Detail</h1>
+<h3>{{movie.pk}}번 영화</h3>
+<h4>영화 제목: {{movie.title}}</h4>
+<h4>영화 내용: {{movie.description}}</h4>
+<hr>
+<form action="{% url "movies:delete" movie.pk%}" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="영화 삭제">
+</form>
+
+
+
+{% endblock content %}
+
+
+
+
