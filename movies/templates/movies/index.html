@@ -2,9 +2,10 @@
 {% load static %}
 
 {% block content %}
-{{request.user}}
-<h1>INDEX PAGE</h1>
+
 <img src="{% static "movies/index.jpg" %}" alt="index_img">
+<h1>INDEX PAGE</h1>
+<a href="{% url "movies:create" %}">create</a>
 <div class="container" >
     <div class = "row g-5">
     {% for movie in movies %}

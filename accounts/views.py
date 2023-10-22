@@ -32,7 +32,7 @@ def login(request):
 @login_required
 @require_http_methods(['POST',])
 def logout(request):
-        auth_logout(request.user)
+        auth_logout(request)
         return redirect('movies:index')
 
 
