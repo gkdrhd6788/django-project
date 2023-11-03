@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2 class="text-center">DETAIL</h2>
+  <h3>{{ review.pk }} 번째 글</h3>
+  <hr>
+  <p>제목: {{ review.title }}</p>
+  <p>영화 제목: {{ review.movie_title }}</p>
+  <p>내용: {{ review.content }}</p>
+  <p>평점: {{ review.rank }}</p>
+  <p>작성 시각: {{ review.created_at }}</p>
+  <p>수정 시각: {{ review.updated_at }}</p>
+  <hr>
+  <h4>댓글 목록</h4>
+  {% if comments|length %}
+    <p><b>{{ comments|length }}개의 댓글이 있습니다.</b></p>
+  {% endif %}
+  {% for comment in comments %}
+    <div>
+      {{ comment.user }} - {{ comment.content }} 
+      <form class="like-forms" data-comment-id="{{ comment.pk }}" data-review-id="{{ review.pk}}">
+        {% csrf_token %}
+        {% if request.user in comment.like_users.all %}
+        <button class="fa-solid fa-heart" id="like-{{comment.pk}}">
+
+        </button>
+        {% else %}
+        <button class="fa-regular fa-heart" id="like-{{comment.pk}}">
+    
+        </button>
+        {% endif %}
+      </form>
+      좋아요 갯수:<span id="likes-count-{{ comment.pk }}">{{ comment.like_users.all|length }}</span>
+      <ul>
+        {% for reply in comment.reply_set.all %}
+        <li>{{ reply.user }} - {{ reply.content }}
+
+            <form class="reply-like-forms" data-reply-id="{{ reply.pk }}" data-comment-id="{{ comment.pk}}" data-review-id="{{ review.pk}}">
+                {% csrf_token %}
+                {% if request.user in reply.like_users.all %}
+                <button id="reply-like-{{reply.pk}}">좋아요 취소</button>
+                {% else %}
+                <button id="reply-like-{{reply.pk}}">좋아요</button>
+                {% endif %}
+              </form>
+              대댓글 좋아요 갯수:<span id="reply-likes-count-{{ reply.pk }}">{{ reply.like_users.all|length }}</span>
+        </li>
+
+        {% endfor %}
+      </ul>
+      
+
+      {% if user.is_authenticated %}
+    <form action="{% url 'community:create_reply' review.pk comment.pk %}" method="POST">
+      {% csrf_token %}
+      {{reply_form.as_p}}
+      <input type="submit">
+    </form>
+  {% else %}
+    <a href="{% url 'accounts:login' %}">[대댓글을 작성하려면 로그인하세요.]</a>
+  {% endif %}
+    </div>
+  {% empty %}
+    <p><b>댓글이 없어요..</b></p>
+  {% endfor %}
+  <hr>
+  {% if user.is_authenticated %}
+    <form action="{% url 'community:create_comment' review.pk %}" method="POST">
+      {% csrf_token %}
+      {{ comment_form }}
+      <input type="submit">
+    </form>
+  {% else %}
+    <a href="{% url 'accounts:login' %}">[댓글을 작성하려면 로그인하세요.]</a>
+  {% endif %}
+  <a href="{% url 'community:index' %}">[back]</a>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const formTags = document.querySelectorAll('.like-forms')
+    const replyFormTags = document.querySelectorAll('.reply-like-forms')
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+    formTags.forEach((formTag)=>{
+        formTag.addEventListener('submit',function(event){
+            event.preventDefault()
+            const commentId = formTag.dataset.commentId
+            const reviewId = formTag.dataset.reviewId
+            axios({
+                url:`/community/${reviewId}/comments/${commentId}/like/`,
+                method : "post",
+                headers: {'X-CSRFToken': csrftoken}
+            })
+                .then((response)=>{
+                    const isLiked=response.data.is_liked
+                    const likeBtn = document.querySelector(`#like-${commentId}`)
+                    if (isLiked===true) {
+                        likeBtn.setAttribute("class", "fa-solid fa-heart")
+                    } else {
+                        likeBtn.setAttribute("class", "fa-regular fa-heart")
+                    }
+                    const likesCountTag = document.querySelector(`#likes-count-${commentId}`)
+                    likesCountTag.textContent = response.data.likes_count
+                })
+                .catch((error)=>{
+                    console.log(error)
+                })
+        })
+    })
+
+    replyFormTags.forEach((replyFormTag)=>{
+        replyFormTag.addEventListener('submit',function(event){
+            event.preventDefault()
+            const commentId = replyFormTag.dataset.commentId
+            const replyId = replyFormTag.dataset.replyId
+            const reviewId = replyFormTag.dataset.reviewId
+            axios({
+                url:`/community/${reviewId}/comments/${commentId}/reply/${replyId}/like/`,
+                method : "post",
+                headers: {'X-CSRFToken': csrftoken}
+            })
+                .then((response)=>{
+                    const isLiked=response.data.is_liked
+                    const likeBtn = document.querySelector(`#reply-like-${replyId} > i`)
+                    if (isLiked===true) {
+                        likeBtn.setAttribute("class", "fa-solid fa-heart")
+                    } else {
+                        likeBtn.setAttribute("class", "fa-regular fa-heart")
+                    }
+                    const replyLikesCountTag = document.querySelector(`#reply-likes-count-${replyId}`)
+                    replyLikesCountTag.textContent = response.data.reply_likes_count
+                })
+                .catch((error)=>{
+                    console.log(error)
+                })
+        })
+    })
+  </script>
+
+{% endblock  %}

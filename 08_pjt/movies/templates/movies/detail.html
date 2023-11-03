@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<img src="{{movie.poster_path}}" alt="">
+{{movie.title}}
+{{movie.release_date}}
+{{movie.popularity}}
+{{movie.vote_count}}
+{{movie.vote_average}}
+{{movie.overview}}
+{% endblock %}
